@@ -224,14 +224,21 @@ with tab2:
         
         st.subheader("ダウンロード")
         
-        col1, col2, col3, col4 = st.columns(4)
-        
-        for i, final_img in enumerate(final_images):
-            with st.columns(4)[i]:
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w') as zipf:
+            for i, final_img in enumerate(final_images):
                 buf = BytesIO()
                 final_img.save(buf, format='PNG')
-                buf.seek(0)
-                st.download_button(f"{i+1}.png", buf.getvalue(), f"{i+1}.png", "image/png", key=f"composite_{i}")
+                zipf.writestr(f'{i+1}.png', buf.getvalue())
+        
+        zip_buffer.seek(0)
+        st.download_button(
+            label="📥 ダウンロード",
+            data=zip_buffer.getvalue(),
+            file_name="合成画像.zip",
+            mime="application/zip",
+            key="composite_download"
+        )
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
@@ -326,14 +333,21 @@ with tab3:
         
         st.subheader("ダウンロード")
         
-        col1, col2, col3, col4 = st.columns(4)
-        
-        for i, final_img in enumerate(final_images):
-            with st.columns(4)[i]:
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w') as zipf:
+            for i, final_img in enumerate(final_images):
                 buf = BytesIO()
                 final_img.save(buf, format='PNG')
-                buf.seek(0)
-                st.download_button(f"{i+1}.png", buf.getvalue(), f"{i+1}.png", "image/png", key=f"onestep_{i}")
+                zipf.writestr(f'{i+1}.png', buf.getvalue())
+        
+        zip_buffer.seek(0)
+        st.download_button(
+            label="📥 ダウンロード",
+            data=zip_buffer.getvalue(),
+            file_name="合成画像.zip",
+            mime="application/zip",
+            key="onestep_download"
+        )
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
