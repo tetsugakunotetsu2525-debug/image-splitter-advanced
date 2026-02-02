@@ -46,18 +46,27 @@ def split_4(img_cropped):
     ]
 
 def resize_to_side_size(img, target_width, target_height):
-    """画像を上下用サイズにリサイズ"""
-    # 画像を目標サイズに合わせてリサイズ（アスペクト比保持）
-    img.thumbnail((target_width, target_height), Image.Resampling.LANCZOS)
+    """画像を上下用サイズにトリミング＆リサイズ"""
+    # 目標の比率
+    target_ratio = target_width / target_height
+    current_ratio = img.width / img.height
     
-    # キャンバスを作成してセンタリング
-    side_img = Image.new('RGB', (target_width, target_height), color=(255, 255, 255))
+    # トリミング
+    if current_ratio > target_ratio:
+        # 幅が広すぎる場合
+        new_width = int(img.height * target_ratio)
+        left = (img.width - new_width) // 2
+        right = left + new_width
+        img_cropped = img.crop((left, 0, right, img.height))
+    else:
+        # 高さが高すぎる場合
+        new_height = int(img.width / target_ratio)
+        top = (img.height - new_height) // 2
+        bottom = top + new_height
+        img_cropped = img.crop((0, top, img.width, bottom))
     
-    # リサイズ後の画像を中央に配置
-    x_offset = (target_width - img.width) // 2
-    y_offset = (target_height - img.height) // 2
-    side_img.paste(img, (x_offset, y_offset))
-    
+    # リサイズ
+    side_img = img_cropped.resize((target_width, target_height), Image.Resampling.LANCZOS)
     return side_img
 
 # ===== タブ1：4分割のみ =====
