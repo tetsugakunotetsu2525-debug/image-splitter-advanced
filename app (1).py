@@ -123,7 +123,7 @@ with tab1:
         )
         
         st.write("**個別ダウンロード**")
-        col1, col2, col3, col4 = st.columns(4, gap="collapsed")
+        col1, col2, col3, col4 = st.columns(4, gap="small")
         with col1:
             buf = BytesIO()
             split_images[0].save(buf, format='PNG')
@@ -266,7 +266,7 @@ with tab2:
         )
         
         st.write("**個別ダウンロード**")
-        col1, col2, col3, col4 = st.columns(4, gap="collapsed")
+        col1, col2, col3, col4 = st.columns(4, gap="small")
         with col1:
             buf = BytesIO()
             final_images[0].save(buf, format='PNG')
@@ -391,7 +391,7 @@ with tab3:
         )
         
         st.write("**個別ダウンロード**")
-        col1, col2, col3, col4 = st.columns(4, gap="collapsed")
+        col1, col2, col3, col4 = st.columns(4, gap="small")
         with col1:
             buf = BytesIO()
             final_images[0].save(buf, format='PNG')
