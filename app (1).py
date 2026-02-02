@@ -13,7 +13,6 @@ if 'saved_side_images' not in st.session_state:
 tab1, tab2, tab3 = st.tabs(["4分割のみ", "合成", "ワンステップ"])
 
 def crop_to_16_9(img):
-    """画像を16:9にトリミング"""
     target_ratio = 16 / 9
     current_ratio = img.width / img.height
     
@@ -31,7 +30,6 @@ def crop_to_16_9(img):
     return img_cropped
 
 def split_4(img_cropped):
-    """16:9の画像を4分割"""
     crop_width, crop_height = img_cropped.size
     center_x = crop_width // 2
     center_y = crop_height // 2
@@ -44,7 +42,6 @@ def split_4(img_cropped):
     ], crop_width, crop_height
 
 def resize_to_side_size(img, target_width, target_height):
-    """画像を上下用サイズにトリミング＆リサイズ"""
     target_ratio = target_width / target_height
     current_ratio = img.width / img.height
     
@@ -164,7 +161,6 @@ with tab2:
         
         st.write(f"**上下用画像のサイズ:** {side_width} × {side_height}")
         
-        # 4枚が必要（上2枚 + 下2枚）
         needed = 4
         final_sides = st.session_state.saved_side_images.copy()
         
@@ -176,55 +172,63 @@ with tab2:
         random.shuffle(final_sides)
         resized_sides = [resize_to_side_size(img.copy(), side_width, side_height) for img in final_sides[:needed]]
         
-        # 上部2枚、メイン、下部2枚を縦に繋ぐ
         top_img1 = resized_sides[0]
         top_img2 = resized_sides[1]
         bottom_img1 = resized_sides[2]
         bottom_img2 = resized_sides[3]
         
-        # メイン画像（4分割）を1つの画像として作成
-        main_split_width = crop_width // 2
-        main_split_height = crop_height // 2
+        # 各分割画像に対して、上下2枚ずつ追加した4つの縦長画像を作成
+        final_images = []
         
-        main_combined_height = crop_height
-        main_combined = Image.new('RGB', (crop_width, main_combined_height))
-        
-        y_offset = 0
-        main_combined.paste(split_images[0], (0, y_offset))
-        main_combined.paste(split_images[1], (main_split_width, y_offset))
-        y_offset += main_split_height
-        
-        main_combined.paste(split_images[2], (0, y_offset))
-        main_combined.paste(split_images[3], (main_split_width, y_offset))
-        
-        # 5つを縦に繋ぐ（全体用）
-        total_height = top_img1.height + top_img2.height + main_combined.height + bottom_img1.height + bottom_img2.height
-        final_image = Image.new('RGB', (crop_width, total_height))
-        
-        y_offset = 0
-        final_image.paste(top_img1, (0, y_offset))
-        y_offset += top_img1.height
-        
-        final_image.paste(top_img2, (0, y_offset))
-        y_offset += top_img2.height
-        
-        final_image.paste(main_combined, (0, y_offset))
-        y_offset += main_combined.height
-        
-        final_image.paste(bottom_img1, (0, y_offset))
-        y_offset += bottom_img1.height
-        
-        final_image.paste(bottom_img2, (0, y_offset))
+        for split_img in split_images:
+            total_height = top_img1.height + top_img2.height + split_img.height + bottom_img1.height + bottom_img2.height
+            combined = Image.new('RGB', (crop_width, total_height))
+            
+            y_offset = 0
+            combined.paste(top_img1, (0, y_offset))
+            y_offset += top_img1.height
+            
+            combined.paste(top_img2, (0, y_offset))
+            y_offset += top_img2.height
+            
+            combined.paste(split_img, (0, y_offset))
+            y_offset += split_img.height
+            
+            combined.paste(bottom_img1, (0, y_offset))
+            y_offset += bottom_img1.height
+            
+            combined.paste(bottom_img2, (0, y_offset))
+            
+            final_images.append(combined)
         
         st.subheader("プレビュー")
-        st.image(final_image, use_column_width=True)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write("**1. 左上**")
+            st.image(final_images[0], use_column_width=True)
+        with col2:
+            st.write("**2. 右上**")
+            st.image(final_images[1], use_column_width=True)
+        
+        col3, col4 = st.columns(2)
+        with col3:
+            st.write("**3. 左下**")
+            st.image(final_images[2], use_column_width=True)
+        with col4:
+            st.write("**4. 右下**")
+            st.image(final_images[3], use_column_width=True)
         
         st.subheader("ダウンロード")
         
-        buf = BytesIO()
-        final_image.save(buf, format='PNG')
-        buf.seek(0)
-        st.download_button("合成画像.png", buf.getvalue(), "合成画像.png", "image/png", key="download_composite")
+        col1, col2, col3, col4 = st.columns(4)
+        
+        for i, final_img in enumerate(final_images):
+            with st.columns(4)[i]:
+                buf = BytesIO()
+                final_img.save(buf, format='PNG')
+                buf.seek(0)
+                st.download_button(f"{i+1}.png", buf.getvalue(), f"{i+1}.png", "image/png", key=f"composite_{i}")
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
@@ -276,47 +280,57 @@ with tab3:
         bottom_img1 = resized_sides[2]
         bottom_img2 = resized_sides[3]
         
-        main_split_width = crop_width // 2
-        main_split_height = crop_height // 2
+        final_images = []
         
-        main_combined_height = crop_height
-        main_combined = Image.new('RGB', (crop_width, main_combined_height))
-        
-        y_offset = 0
-        main_combined.paste(split_images[0], (0, y_offset))
-        main_combined.paste(split_images[1], (main_split_width, y_offset))
-        y_offset += main_split_height
-        
-        main_combined.paste(split_images[2], (0, y_offset))
-        main_combined.paste(split_images[3], (main_split_width, y_offset))
-        
-        total_height = top_img1.height + top_img2.height + main_combined.height + bottom_img1.height + bottom_img2.height
-        final_image = Image.new('RGB', (crop_width, total_height))
-        
-        y_offset = 0
-        final_image.paste(top_img1, (0, y_offset))
-        y_offset += top_img1.height
-        
-        final_image.paste(top_img2, (0, y_offset))
-        y_offset += top_img2.height
-        
-        final_image.paste(main_combined, (0, y_offset))
-        y_offset += main_combined.height
-        
-        final_image.paste(bottom_img1, (0, y_offset))
-        y_offset += bottom_img1.height
-        
-        final_image.paste(bottom_img2, (0, y_offset))
+        for split_img in split_images:
+            total_height = top_img1.height + top_img2.height + split_img.height + bottom_img1.height + bottom_img2.height
+            combined = Image.new('RGB', (crop_width, total_height))
+            
+            y_offset = 0
+            combined.paste(top_img1, (0, y_offset))
+            y_offset += top_img1.height
+            
+            combined.paste(top_img2, (0, y_offset))
+            y_offset += top_img2.height
+            
+            combined.paste(split_img, (0, y_offset))
+            y_offset += split_img.height
+            
+            combined.paste(bottom_img1, (0, y_offset))
+            y_offset += bottom_img1.height
+            
+            combined.paste(bottom_img2, (0, y_offset))
+            
+            final_images.append(combined)
         
         st.subheader("プレビュー")
-        st.image(final_image, use_column_width=True)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write("**1. 左上**")
+            st.image(final_images[0], use_column_width=True)
+        with col2:
+            st.write("**2. 右上**")
+            st.image(final_images[1], use_column_width=True)
+        
+        col3, col4 = st.columns(2)
+        with col3:
+            st.write("**3. 左下**")
+            st.image(final_images[2], use_column_width=True)
+        with col4:
+            st.write("**4. 右下**")
+            st.image(final_images[3], use_column_width=True)
         
         st.subheader("ダウンロード")
         
-        buf = BytesIO()
-        final_image.save(buf, format='PNG')
-        buf.seek(0)
-        st.download_button("合成画像.png", buf.getvalue(), "合成画像.png", "image/png", key="download_onestep")
+        col1, col2, col3, col4 = st.columns(4)
+        
+        for i, final_img in enumerate(final_images):
+            with st.columns(4)[i]:
+                buf = BytesIO()
+                final_img.save(buf, format='PNG')
+                buf.seek(0)
+                st.download_button(f"{i+1}.png", buf.getvalue(), f"{i+1}.png", "image/png", key=f"onestep_{i}")
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
