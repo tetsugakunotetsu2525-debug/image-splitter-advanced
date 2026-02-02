@@ -13,22 +13,21 @@ if 'saved_side_images' not in st.session_state:
 
 tab1, tab2, tab3 = st.tabs(["4分割のみ", "合成", "ワンステップ"])
 
-@st.cache_data
-def crop_to_16_9(img_bytes):
-    img = Image.open(BytesIO(img_bytes))
+def crop_to_16_9(img):
+    img_obj = Image.open(BytesIO(img)) if isinstance(img, bytes) else img
     target_ratio = 16 / 9
-    current_ratio = img.width / img.height
+    current_ratio = img_obj.width / img_obj.height
     
     if current_ratio > target_ratio:
-        new_width = int(img.height * target_ratio)
-        left = (img.width - new_width) // 2
+        new_width = int(img_obj.height * target_ratio)
+        left = (img_obj.width - new_width) // 2
         right = left + new_width
-        img_cropped = img.crop((left, 0, right, img.height))
+        img_cropped = img_obj.crop((left, 0, right, img_obj.height))
     else:
-        new_height = int(img.width / target_ratio)
-        top = (img.height - new_height) // 2
+        new_height = int(img_obj.width / target_ratio)
+        top = (img_obj.height - new_height) // 2
         bottom = top + new_height
-        img_cropped = img.crop((0, top, img.width, bottom))
+        img_cropped = img_obj.crop((0, top, img_obj.width, bottom))
     
     return img_cropped
 
@@ -85,7 +84,7 @@ with tab1:
         
         st.write(f"**元のサイズ:** {original_width} × {original_height}")
         
-        img_cropped = crop_to_16_9(uploaded_file.getvalue())
+        img_cropped = crop_to_16_9(img)
         crop_width, crop_height = img_cropped.size
         st.write(f"**16:9トリミング後:** {crop_width} × {crop_height}")
         
@@ -114,39 +113,37 @@ with tab1:
         
         st.subheader("ダウンロード")
         
-        col_zip = st.columns(1)[0]
-        with col_zip:
-            zip_data = create_zip(split_images)
-            st.download_button(
-                label="📦 ZIP一括ダウンロード",
-                data=zip_data,
-                file_name="分割画像.zip",
-                mime="application/zip",
-                key="split_zip"
-            )
+        zip_data = create_zip(split_images)
+        st.download_button(
+            label="📦 ZIP一括ダウンロード",
+            data=zip_data,
+            file_name="分割画像.zip",
+            mime="application/zip",
+            key="split_zip"
+        )
         
         st.write("**個別ダウンロード**")
-        col1, col2, col3, col4 = st.columns(4, gap="small")
+        col1, col2, col3, col4 = st.columns(4, gap="collapsed")
         with col1:
             buf = BytesIO()
             split_images[0].save(buf, format='PNG')
             buf.seek(0)
-            st.download_button("1.png", buf.getvalue(), "1.png", "image/png", key="split_1")
+            st.download_button("1.png", buf.getvalue(), "1.png", "image/png", key="split_1", use_container_width=True)
         with col2:
             buf = BytesIO()
             split_images[1].save(buf, format='PNG')
             buf.seek(0)
-            st.download_button("2.png", buf.getvalue(), "2.png", "image/png", key="split_2")
+            st.download_button("2.png", buf.getvalue(), "2.png", "image/png", key="split_2", use_container_width=True)
         with col3:
             buf = BytesIO()
             split_images[2].save(buf, format='PNG')
             buf.seek(0)
-            st.download_button("3.png", buf.getvalue(), "3.png", "image/png", key="split_3")
+            st.download_button("3.png", buf.getvalue(), "3.png", "image/png", key="split_3", use_container_width=True)
         with col4:
             buf = BytesIO()
             split_images[3].save(buf, format='PNG')
             buf.seek(0)
-            st.download_button("4.png", buf.getvalue(), "4.png", "image/png", key="split_4")
+            st.download_button("4.png", buf.getvalue(), "4.png", "image/png", key="split_4", use_container_width=True)
     
     else:
         st.info("👆 画像をアップロードしてください")
@@ -189,7 +186,7 @@ with tab2:
         
         st.write(f"**メイン画像サイズ:** {original_width} × {original_height}")
         
-        main_cropped = crop_to_16_9(main_file.getvalue())
+        main_cropped = crop_to_16_9(main_img)
         crop_width, crop_height = main_cropped.size
         st.write(f"**16:9トリミング後:** {crop_width} × {crop_height}")
         
@@ -259,39 +256,37 @@ with tab2:
         
         st.subheader("ダウンロード")
         
-        col_zip = st.columns(1)[0]
-        with col_zip:
-            zip_data = create_zip(final_images)
-            st.download_button(
-                label="📦 ZIP一括ダウンロード",
-                data=zip_data,
-                file_name="合成画像.zip",
-                mime="application/zip",
-                key="comp_zip"
-            )
+        zip_data = create_zip(final_images)
+        st.download_button(
+            label="📦 ZIP一括ダウンロード",
+            data=zip_data,
+            file_name="合成画像.zip",
+            mime="application/zip",
+            key="comp_zip"
+        )
         
         st.write("**個別ダウンロード**")
-        col1, col2, col3, col4 = st.columns(4, gap="small")
+        col1, col2, col3, col4 = st.columns(4, gap="collapsed")
         with col1:
             buf = BytesIO()
             final_images[0].save(buf, format='PNG')
             buf.seek(0)
-            st.download_button("1.png", buf.getvalue(), "1.png", "image/png", key="comp_1")
+            st.download_button("1.png", buf.getvalue(), "1.png", "image/png", key="comp_1", use_container_width=True)
         with col2:
             buf = BytesIO()
             final_images[1].save(buf, format='PNG')
             buf.seek(0)
-            st.download_button("2.png", buf.getvalue(), "2.png", "image/png", key="comp_2")
+            st.download_button("2.png", buf.getvalue(), "2.png", "image/png", key="comp_2", use_container_width=True)
         with col3:
             buf = BytesIO()
             final_images[2].save(buf, format='PNG')
             buf.seek(0)
-            st.download_button("3.png", buf.getvalue(), "3.png", "image/png", key="comp_3")
+            st.download_button("3.png", buf.getvalue(), "3.png", "image/png", key="comp_3", use_container_width=True)
         with col4:
             buf = BytesIO()
             final_images[3].save(buf, format='PNG')
             buf.seek(0)
-            st.download_button("4.png", buf.getvalue(), "4.png", "image/png", key="comp_4")
+            st.download_button("4.png", buf.getvalue(), "4.png", "image/png", key="comp_4", use_container_width=True)
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
@@ -314,7 +309,7 @@ with tab3:
         
         st.write(f"**メイン画像サイズ:** {original_width} × {original_height}")
         
-        main_cropped = crop_to_16_9(main_file_onestep.getvalue())
+        main_cropped = crop_to_16_9(main_img)
         crop_width, crop_height = main_cropped.size
         st.write(f"**16:9トリミング後:** {crop_width} × {crop_height}")
         
@@ -386,39 +381,37 @@ with tab3:
         
         st.subheader("ダウンロード")
         
-        col_zip = st.columns(1)[0]
-        with col_zip:
-            zip_data = create_zip(final_images)
-            st.download_button(
-                label="📦 ZIP一括ダウンロード",
-                data=zip_data,
-                file_name="合成画像.zip",
-                mime="application/zip",
-                key="one_zip"
-            )
+        zip_data = create_zip(final_images)
+        st.download_button(
+            label="📦 ZIP一括ダウンロード",
+            data=zip_data,
+            file_name="合成画像.zip",
+            mime="application/zip",
+            key="one_zip"
+        )
         
         st.write("**個別ダウンロード**")
-        col1, col2, col3, col4 = st.columns(4, gap="small")
+        col1, col2, col3, col4 = st.columns(4, gap="collapsed")
         with col1:
             buf = BytesIO()
             final_images[0].save(buf, format='PNG')
             buf.seek(0)
-            st.download_button("1.png", buf.getvalue(), "1.png", "image/png", key="one_1")
+            st.download_button("1.png", buf.getvalue(), "1.png", "image/png", key="one_1", use_container_width=True)
         with col2:
             buf = BytesIO()
             final_images[1].save(buf, format='PNG')
             buf.seek(0)
-            st.download_button("2.png", buf.getvalue(), "2.png", "image/png", key="one_2")
+            st.download_button("2.png", buf.getvalue(), "2.png", "image/png", key="one_2", use_container_width=True)
         with col3:
             buf = BytesIO()
             final_images[2].save(buf, format='PNG')
             buf.seek(0)
-            st.download_button("3.png", buf.getvalue(), "3.png", "image/png", key="one_3")
+            st.download_button("3.png", buf.getvalue(), "3.png", "image/png", key="one_3", use_container_width=True)
         with col4:
             buf = BytesIO()
             final_images[3].save(buf, format='PNG')
             buf.seek(0)
-            st.download_button("4.png", buf.getvalue(), "4.png", "image/png", key="one_4")
+            st.download_button("4.png", buf.getvalue(), "4.png", "image/png", key="one_4", use_container_width=True)
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
