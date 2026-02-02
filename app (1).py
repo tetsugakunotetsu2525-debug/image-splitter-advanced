@@ -41,7 +41,8 @@ def split_4(img_cropped):
         img_cropped.crop((center_x, center_y, crop_width, crop_height))
     ], crop_width, crop_height
 
-def resize_to_side_size(img, target_width, target_height):
+def resize_to_split_size(img, target_width, target_height):
+    """画像を分割マスサイズにトリミング＆リサイズ"""
     target_ratio = target_width / target_height
     current_ratio = img.width / img.height
     
@@ -56,8 +57,8 @@ def resize_to_side_size(img, target_width, target_height):
         bottom = top + new_height
         img_cropped = img.crop((0, top, img.width, bottom))
     
-    side_img = img_cropped.resize((target_width, target_height), Image.Resampling.LANCZOS)
-    return side_img
+    result_img = img_cropped.resize((target_width, target_height), Image.Resampling.LANCZOS)
+    return result_img
 
 # ===== タブ1：4分割のみ =====
 with tab1:
@@ -156,11 +157,11 @@ with tab2:
         
         split_images, cw, ch = split_4(main_cropped)
         
-        # 上下用画像は、メイン画像全体の幅に合わせる
-        side_width = crop_width
-        side_height = crop_height // 2
+        # メイン分割後の1マスサイズが基準
+        split_width = crop_width // 2
+        split_height = crop_height // 2
         
-        st.write(f"**上下用画像のサイズ:** {side_width} × {side_height}")
+        st.write(f"**基準サイズ（メイン分割後）:** {split_width} × {split_height}")
         
         needed = 4
         final_sides = st.session_state.saved_side_images.copy()
@@ -171,7 +172,7 @@ with tab2:
                 final_sides.append(random.choice(st.session_state.saved_side_images))
         
         random.shuffle(final_sides)
-        resized_sides = [resize_to_side_size(img.copy(), side_width, side_height) for img in final_sides[:needed]]
+        resized_sides = [resize_to_split_size(img.copy(), split_width, split_height) for img in final_sides[:needed]]
         
         top_img1 = resized_sides[0]
         top_img2 = resized_sides[1]
@@ -183,7 +184,7 @@ with tab2:
         
         for split_img in split_images:
             total_height = top_img1.height + top_img2.height + split_img.height + bottom_img1.height + bottom_img2.height
-            combined = Image.new('RGB', (crop_width, total_height))
+            combined = Image.new('RGB', (split_width, total_height))
             
             y_offset = 0
             combined.paste(top_img1, (0, y_offset))
@@ -192,9 +193,7 @@ with tab2:
             combined.paste(top_img2, (0, y_offset))
             y_offset += top_img2.height
             
-            # 分割画像をセンタリング
-            x_offset = (crop_width - split_img.width) // 2
-            combined.paste(split_img, (x_offset, y_offset))
+            combined.paste(split_img, (0, y_offset))
             y_offset += split_img.height
             
             combined.paste(bottom_img1, (0, y_offset))
@@ -260,10 +259,10 @@ with tab3:
         
         split_images, cw, ch = split_4(main_cropped)
         
-        side_width = crop_width
-        side_height = crop_height // 2
+        split_width = crop_width // 2
+        split_height = crop_height // 2
         
-        st.write(f"**上下用画像のサイズ:** {side_width} × {side_height}")
+        st.write(f"**基準サイズ（メイン分割後）:** {split_width} × {split_height}")
         
         side_images = [Image.open(f) for f in side_files_onestep]
         
@@ -276,7 +275,7 @@ with tab3:
                 final_sides.append(random.choice(side_images))
         
         random.shuffle(final_sides)
-        resized_sides = [resize_to_side_size(img.copy(), side_width, side_height) for img in final_sides[:needed]]
+        resized_sides = [resize_to_split_size(img.copy(), split_width, split_height) for img in final_sides[:needed]]
         
         top_img1 = resized_sides[0]
         top_img2 = resized_sides[1]
@@ -287,7 +286,7 @@ with tab3:
         
         for split_img in split_images:
             total_height = top_img1.height + top_img2.height + split_img.height + bottom_img1.height + bottom_img2.height
-            combined = Image.new('RGB', (crop_width, total_height))
+            combined = Image.new('RGB', (split_width, total_height))
             
             y_offset = 0
             combined.paste(top_img1, (0, y_offset))
@@ -296,8 +295,7 @@ with tab3:
             combined.paste(top_img2, (0, y_offset))
             y_offset += top_img2.height
             
-            x_offset = (crop_width - split_img.width) // 2
-            combined.paste(split_img, (x_offset, y_offset))
+            combined.paste(split_img, (0, y_offset))
             y_offset += split_img.height
             
             combined.paste(bottom_img1, (0, y_offset))
