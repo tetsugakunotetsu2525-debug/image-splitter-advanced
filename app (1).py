@@ -2,6 +2,7 @@ import streamlit as st
 from PIL import Image
 from io import BytesIO
 import random
+import zipfile
 
 st.set_page_config(page_title="画像ツール", layout="wide")
 
@@ -231,6 +232,25 @@ with tab2:
                 final_img.save(buf, format='PNG')
                 buf.seek(0)
                 st.download_button(f"{i+1}.png", buf.getvalue(), f"{i+1}.png", "image/png", key=f"composite_{i}")
+        
+        st.write("---")
+        st.write("**まとめてダウンロード**")
+        
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w') as zipf:
+            for i, final_img in enumerate(final_images):
+                buf = BytesIO()
+                final_img.save(buf, format='PNG')
+                zipf.writestr(f'{i+1}.png', buf.getvalue())
+        
+        zip_buffer.seek(0)
+        st.download_button(
+            label="📦 全て一括ダウンロード（ZIP）",
+            data=zip_buffer.getvalue(),
+            file_name="合成画像.zip",
+            mime="application/zip",
+            key="composite_zip"
+        )
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
@@ -333,6 +353,25 @@ with tab3:
                 final_img.save(buf, format='PNG')
                 buf.seek(0)
                 st.download_button(f"{i+1}.png", buf.getvalue(), f"{i+1}.png", "image/png", key=f"onestep_{i}")
+        
+        st.write("---")
+        st.write("**まとめてダウンロード**")
+        
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w') as zipf:
+            for i, final_img in enumerate(final_images):
+                buf = BytesIO()
+                final_img.save(buf, format='PNG')
+                zipf.writestr(f'{i+1}.png', buf.getvalue())
+        
+        zip_buffer.seek(0)
+        st.download_button(
+            label="📦 全て一括ダウンロード（ZIP）",
+            data=zip_buffer.getvalue(),
+            file_name="合成画像.zip",
+            mime="application/zip",
+            key="onestep_zip"
+        )
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
