@@ -2,7 +2,7 @@ import streamlit as st
 from PIL import Image
 from io import BytesIO
 import random
-import zipfile
+import base64
 
 st.set_page_config(page_title="画像ツール", layout="wide")
 
@@ -43,7 +43,6 @@ def split_4(img_cropped):
     ], crop_width, crop_height
 
 def resize_to_split_size(img, target_width, target_height):
-    """画像を分割マスサイズにトリミング＆リサイズ"""
     target_ratio = target_width / target_height
     current_ratio = img.width / img.height
     
@@ -60,6 +59,12 @@ def resize_to_split_size(img, target_width, target_height):
     
     result_img = img_cropped.resize((target_width, target_height), Image.Resampling.LANCZOS)
     return result_img
+
+def img_to_base64(img):
+    buf = BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
+    return base64.b64encode(buf.getvalue()).decode()
 
 # ===== タブ1：4分割のみ =====
 with tab1:
@@ -158,7 +163,6 @@ with tab2:
         
         split_images, cw, ch = split_4(main_cropped)
         
-        # メイン分割後の1マスサイズが基準
         split_width = crop_width // 2
         split_height = crop_height // 2
         
@@ -180,7 +184,6 @@ with tab2:
         bottom_img1 = resized_sides[2]
         bottom_img2 = resized_sides[3]
         
-        # 各分割画像に対して、上下2枚ずつ追加した4つの縦長画像を作成
         final_images = []
         
         for split_img in split_images:
@@ -224,21 +227,19 @@ with tab2:
         
         st.subheader("ダウンロード")
         
-        zip_buffer = BytesIO()
-        with zipfile.ZipFile(zip_buffer, 'w') as zipf:
-            for i, final_img in enumerate(final_images):
-                buf = BytesIO()
-                final_img.save(buf, format='PNG')
-                zipf.writestr(f'{i+1}.png', buf.getvalue())
+        # Base64に変換
+        b64_images = [img_to_base64(img) for img in final_images]
         
-        zip_buffer.seek(0)
-        st.download_button(
-            label="📥 ダウンロード",
-            data=zip_buffer.getvalue(),
-            file_name="合成画像.zip",
-            mime="application/zip",
-            key="composite_download"
-        )
+        # HTMLダウンロードリンク
+        html_links = f"""
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="data:image/png;base64,{b64_images[0]}" download="1.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">1.png</a>
+            <a href="data:image/png;base64,{b64_images[1]}" download="2.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">2.png</a>
+            <a href="data:image/png;base64,{b64_images[2]}" download="3.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">3.png</a>
+            <a href="data:image/png;base64,{b64_images[3]}" download="4.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">4.png</a>
+        </div>
+        """
+        st.markdown(html_links, unsafe_allow_html=True)
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
@@ -333,21 +334,19 @@ with tab3:
         
         st.subheader("ダウンロード")
         
-        zip_buffer = BytesIO()
-        with zipfile.ZipFile(zip_buffer, 'w') as zipf:
-            for i, final_img in enumerate(final_images):
-                buf = BytesIO()
-                final_img.save(buf, format='PNG')
-                zipf.writestr(f'{i+1}.png', buf.getvalue())
+        # Base64に変換
+        b64_images = [img_to_base64(img) for img in final_images]
         
-        zip_buffer.seek(0)
-        st.download_button(
-            label="📥 ダウンロード",
-            data=zip_buffer.getvalue(),
-            file_name="合成画像.zip",
-            mime="application/zip",
-            key="onestep_download"
-        )
+        # HTMLダウンロードリンク
+        html_links = f"""
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="data:image/png;base64,{b64_images[0]}" download="1.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">1.png</a>
+            <a href="data:image/png;base64,{b64_images[1]}" download="2.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">2.png</a>
+            <a href="data:image/png;base64,{b64_images[2]}" download="3.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">3.png</a>
+            <a href="data:image/png;base64,{b64_images[3]}" download="4.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">4.png</a>
+        </div>
+        """
+        st.markdown(html_links, unsafe_allow_html=True)
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
