@@ -90,27 +90,6 @@ with tab1:
         
         split_images, cw, ch = split_4(img_cropped)
         
-        st.subheader("分割結果")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.write("**1. 左上**")
-            st.image(split_images[0], width=150)
-        
-        with col2:
-            st.write("**2. 右上**")
-            st.image(split_images[1], width=150)
-        
-        col3, col4 = st.columns(2)
-        
-        with col3:
-            st.write("**3. 左下**")
-            st.image(split_images[2], width=150)
-        
-        with col4:
-            st.write("**4. 右下**")
-            st.image(split_images[3], width=150)
-        
         st.subheader("ダウンロード")
         
         zip_data = create_zip(split_images)
@@ -236,24 +215,6 @@ with tab2:
             
             final_images.append(combined)
         
-        st.subheader("プレビュー")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.write("**1. 左上**")
-            st.image(final_images[0], width=150)
-        with col2:
-            st.write("**2. 右上**")
-            st.image(final_images[1], width=150)
-        
-        col3, col4 = st.columns(2)
-        with col3:
-            st.write("**3. 左下**")
-            st.image(final_images[2], width=150)
-        with col4:
-            st.write("**4. 右下**")
-            st.image(final_images[3], width=150)
-        
         st.subheader("ダウンロード")
         
         zip_data = create_zip(final_images)
@@ -360,24 +321,6 @@ with tab3:
             combined.paste(bottom_img2, (0, y_offset))
             
             final_images.append(combined)
-        
-        st.subheader("プレビュー")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.write("**1. 左上**")
-            st.image(final_images[0], width=150)
-        with col2:
-            st.write("**2. 右上**")
-            st.image(final_images[1], width=150)
-        
-        col3, col4 = st.columns(2)
-        with col3:
-            st.write("**3. 左下**")
-            st.image(final_images[2], width=150)
-        with col4:
-            st.write("**4. 右下**")
-            st.image(final_images[3], width=150)
         
         st.subheader("ダウンロード")
         
