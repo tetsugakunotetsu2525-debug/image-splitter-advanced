@@ -156,13 +156,9 @@ with tab2:
         
         split_images, cw, ch = split_4(main_cropped)
         
-        # 分割後のマスサイズ
-        split_width = crop_width // 2
-        split_height = crop_height // 2
-        
-        # 上下用画像は分割マスの高さの1/2サイズ
+        # 上下用画像は、メイン画像全体の幅に合わせる
         side_width = crop_width
-        side_height = split_height
+        side_height = crop_height // 2
         
         st.write(f"**上下用画像のサイズ:** {side_width} × {side_height}")
         
@@ -196,7 +192,9 @@ with tab2:
             combined.paste(top_img2, (0, y_offset))
             y_offset += top_img2.height
             
-            combined.paste(split_img, (0, y_offset))
+            # 分割画像をセンタリング
+            x_offset = (crop_width - split_img.width) // 2
+            combined.paste(split_img, (x_offset, y_offset))
             y_offset += split_img.height
             
             combined.paste(bottom_img1, (0, y_offset))
@@ -262,11 +260,8 @@ with tab3:
         
         split_images, cw, ch = split_4(main_cropped)
         
-        split_width = crop_width // 2
-        split_height = crop_height // 2
-        
         side_width = crop_width
-        side_height = split_height
+        side_height = crop_height // 2
         
         st.write(f"**上下用画像のサイズ:** {side_width} × {side_height}")
         
@@ -301,7 +296,8 @@ with tab3:
             combined.paste(top_img2, (0, y_offset))
             y_offset += top_img2.height
             
-            combined.paste(split_img, (0, y_offset))
+            x_offset = (crop_width - split_img.width) // 2
+            combined.paste(split_img, (x_offset, y_offset))
             y_offset += split_img.height
             
             combined.paste(bottom_img1, (0, y_offset))
