@@ -2,6 +2,7 @@ import streamlit as st
 from PIL import Image
 from io import BytesIO
 import random
+import zipfile
 
 st.set_page_config(page_title="画像ツール", layout="wide")
 
@@ -12,7 +13,9 @@ if 'saved_side_images' not in st.session_state:
 
 tab1, tab2, tab3 = st.tabs(["4分割のみ", "合成", "ワンステップ"])
 
-def crop_to_16_9(img):
+@st.cache_data
+def crop_to_16_9(img_bytes):
+    img = Image.open(BytesIO(img_bytes))
     target_ratio = 16 / 9
     current_ratio = img.width / img.height
     
@@ -59,6 +62,17 @@ def resize_to_split_size(img, target_width, target_height):
     result_img = img_cropped.resize((target_width, target_height), Image.Resampling.LANCZOS)
     return result_img
 
+def create_zip(images):
+    """4つの画像をZIPで返す"""
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for i, img in enumerate(images):
+            buf = BytesIO()
+            img.save(buf, format='PNG')
+            zipf.writestr(f'{i+1}.png', buf.getvalue())
+    zip_buffer.seek(0)
+    return zip_buffer.getvalue()
+
 # ===== タブ1：4分割のみ =====
 with tab1:
     st.subheader("画像を16:9にして4分割")
@@ -71,7 +85,7 @@ with tab1:
         
         st.write(f"**元のサイズ:** {original_width} × {original_height}")
         
-        img_cropped = crop_to_16_9(img)
+        img_cropped = crop_to_16_9(uploaded_file.getvalue())
         crop_width, crop_height = img_cropped.size
         st.write(f"**16:9トリミング後:** {crop_width} × {crop_height}")
         
@@ -100,7 +114,19 @@ with tab1:
         
         st.subheader("ダウンロード")
         
-        col1, col2, col3, col4 = st.columns(4)
+        col_zip = st.columns(1)[0]
+        with col_zip:
+            zip_data = create_zip(split_images)
+            st.download_button(
+                label="📦 ZIP一括ダウンロード",
+                data=zip_data,
+                file_name="分割画像.zip",
+                mime="application/zip",
+                key="split_zip"
+            )
+        
+        st.write("**個別ダウンロード**")
+        col1, col2, col3, col4 = st.columns(4, gap="small")
         with col1:
             buf = BytesIO()
             split_images[0].save(buf, format='PNG')
@@ -163,7 +189,7 @@ with tab2:
         
         st.write(f"**メイン画像サイズ:** {original_width} × {original_height}")
         
-        main_cropped = crop_to_16_9(main_img)
+        main_cropped = crop_to_16_9(main_file.getvalue())
         crop_width, crop_height = main_cropped.size
         st.write(f"**16:9トリミング後:** {crop_width} × {crop_height}")
         
@@ -233,7 +259,19 @@ with tab2:
         
         st.subheader("ダウンロード")
         
-        col1, col2, col3, col4 = st.columns(4)
+        col_zip = st.columns(1)[0]
+        with col_zip:
+            zip_data = create_zip(final_images)
+            st.download_button(
+                label="📦 ZIP一括ダウンロード",
+                data=zip_data,
+                file_name="合成画像.zip",
+                mime="application/zip",
+                key="comp_zip"
+            )
+        
+        st.write("**個別ダウンロード**")
+        col1, col2, col3, col4 = st.columns(4, gap="small")
         with col1:
             buf = BytesIO()
             final_images[0].save(buf, format='PNG')
@@ -276,7 +314,7 @@ with tab3:
         
         st.write(f"**メイン画像サイズ:** {original_width} × {original_height}")
         
-        main_cropped = crop_to_16_9(main_img)
+        main_cropped = crop_to_16_9(main_file_onestep.getvalue())
         crop_width, crop_height = main_cropped.size
         st.write(f"**16:9トリミング後:** {crop_width} × {crop_height}")
         
@@ -348,7 +386,19 @@ with tab3:
         
         st.subheader("ダウンロード")
         
-        col1, col2, col3, col4 = st.columns(4)
+        col_zip = st.columns(1)[0]
+        with col_zip:
+            zip_data = create_zip(final_images)
+            st.download_button(
+                label="📦 ZIP一括ダウンロード",
+                data=zip_data,
+                file_name="合成画像.zip",
+                mime="application/zip",
+                key="one_zip"
+            )
+        
+        st.write("**個別ダウンロード**")
+        col1, col2, col3, col4 = st.columns(4, gap="small")
         with col1:
             buf = BytesIO()
             final_images[0].save(buf, format='PNG')
