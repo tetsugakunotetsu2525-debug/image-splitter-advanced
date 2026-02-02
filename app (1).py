@@ -2,7 +2,6 @@ import streamlit as st
 from PIL import Image
 from io import BytesIO
 import random
-import base64
 
 st.set_page_config(page_title="画像ツール", layout="wide")
 
@@ -60,39 +59,6 @@ def resize_to_split_size(img, target_width, target_height):
     result_img = img_cropped.resize((target_width, target_height), Image.Resampling.LANCZOS)
     return result_img
 
-def img_to_base64(img):
-    buf = BytesIO()
-    img.save(buf, format='PNG')
-    buf.seek(0)
-    return base64.b64encode(buf.getvalue()).decode()
-
-def render_download_button(b64_images):
-    html_code = f"""
-    <button id="downloadBtn" style="padding: 12px 24px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold;">📥 ダウンロード</button>
-    <script>
-    document.getElementById('downloadBtn').addEventListener('click', function() {{
-        const files = [
-            {{'name': '1.png', 'data': 'data:image/png;base64,{b64_images[0]}'}},
-            {{'name': '2.png', 'data': 'data:image/png;base64,{b64_images[1]}'}},
-            {{'name': '3.png', 'data': 'data:image/png;base64,{b64_images[2]}'}},
-            {{'name': '4.png', 'data': 'data:image/png;base64,{b64_images[3]}'}}
-        ];
-        
-        files.forEach((file, index) => {{
-            setTimeout(() => {{
-                const link = document.createElement('a');
-                link.href = file.data;
-                link.download = file.name;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }}, index * 200);
-        }});
-    }});
-    </script>
-    """
-    st.markdown(html_code, unsafe_allow_html=True)
-
 # ===== タブ1：4分割のみ =====
 with tab1:
     st.subheader("画像を16:9にして4分割")
@@ -135,13 +101,26 @@ with tab1:
         st.subheader("ダウンロード")
         
         col1, col2, col3, col4 = st.columns(4)
-        
-        for i, split_img in enumerate(split_images):
-            with st.columns(4)[i]:
-                buf = BytesIO()
-                split_img.save(buf, format='PNG')
-                buf.seek(0)
-                st.download_button(f"{i+1}.png", buf.getvalue(), f"{i+1}.png", "image/png", key=f"split_{i}")
+        with col1:
+            buf = BytesIO()
+            split_images[0].save(buf, format='PNG')
+            buf.seek(0)
+            st.download_button("1.png", buf.getvalue(), "1.png", "image/png", key="split_1")
+        with col2:
+            buf = BytesIO()
+            split_images[1].save(buf, format='PNG')
+            buf.seek(0)
+            st.download_button("2.png", buf.getvalue(), "2.png", "image/png", key="split_2")
+        with col3:
+            buf = BytesIO()
+            split_images[2].save(buf, format='PNG')
+            buf.seek(0)
+            st.download_button("3.png", buf.getvalue(), "3.png", "image/png", key="split_3")
+        with col4:
+            buf = BytesIO()
+            split_images[3].save(buf, format='PNG')
+            buf.seek(0)
+            st.download_button("4.png", buf.getvalue(), "4.png", "image/png", key="split_4")
     
     else:
         st.info("👆 画像をアップロードしてください")
@@ -203,15 +182,12 @@ with tab2:
             for _ in range(shortage):
                 final_sides.append(random.choice(st.session_state.saved_side_images))
         
-        # 各分割マスごとに異なるランダムな上下画像を選ぶ
         final_images = []
         
         for split_img in split_images:
-            # 毎回新しくシャッフル
             shuffled_sides = final_sides.copy()
             random.shuffle(shuffled_sides)
             
-            # この分割マス用の上下4枚を取得
             top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, split_height)
             top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, split_height)
             bottom_img1 = resize_to_split_size(shuffled_sides[2].copy(), split_width, split_height)
@@ -257,8 +233,27 @@ with tab2:
         
         st.subheader("ダウンロード")
         
-        b64_images = [img_to_base64(img) for img in final_images]
-        render_download_button(b64_images)
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            buf = BytesIO()
+            final_images[0].save(buf, format='PNG')
+            buf.seek(0)
+            st.download_button("1.png", buf.getvalue(), "1.png", "image/png", key="comp_1")
+        with col2:
+            buf = BytesIO()
+            final_images[1].save(buf, format='PNG')
+            buf.seek(0)
+            st.download_button("2.png", buf.getvalue(), "2.png", "image/png", key="comp_2")
+        with col3:
+            buf = BytesIO()
+            final_images[2].save(buf, format='PNG')
+            buf.seek(0)
+            st.download_button("3.png", buf.getvalue(), "3.png", "image/png", key="comp_3")
+        with col4:
+            buf = BytesIO()
+            final_images[3].save(buf, format='PNG')
+            buf.seek(0)
+            st.download_button("4.png", buf.getvalue(), "4.png", "image/png", key="comp_4")
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
@@ -302,15 +297,12 @@ with tab3:
             for _ in range(shortage):
                 final_sides.append(random.choice(side_images))
         
-        # 各分割マスごとに異なるランダムな上下画像を選ぶ
         final_images = []
         
         for split_img in split_images:
-            # 毎回新しくシャッフル
             shuffled_sides = final_sides.copy()
             random.shuffle(shuffled_sides)
             
-            # この分割マス用の上下4枚を取得
             top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, split_height)
             top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, split_height)
             bottom_img1 = resize_to_split_size(shuffled_sides[2].copy(), split_width, split_height)
@@ -356,8 +348,27 @@ with tab3:
         
         st.subheader("ダウンロード")
         
-        b64_images = [img_to_base64(img) for img in final_images]
-        render_download_button(b64_images)
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            buf = BytesIO()
+            final_images[0].save(buf, format='PNG')
+            buf.seek(0)
+            st.download_button("1.png", buf.getvalue(), "1.png", "image/png", key="one_1")
+        with col2:
+            buf = BytesIO()
+            final_images[1].save(buf, format='PNG')
+            buf.seek(0)
+            st.download_button("2.png", buf.getvalue(), "2.png", "image/png", key="one_2")
+        with col3:
+            buf = BytesIO()
+            final_images[2].save(buf, format='PNG')
+            buf.seek(0)
+            st.download_button("3.png", buf.getvalue(), "3.png", "image/png", key="one_3")
+        with col4:
+            buf = BytesIO()
+            final_images[3].save(buf, format='PNG')
+            buf.seek(0)
+            st.download_button("4.png", buf.getvalue(), "4.png", "image/png", key="one_4")
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
