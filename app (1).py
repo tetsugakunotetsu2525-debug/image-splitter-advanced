@@ -66,6 +66,33 @@ def img_to_base64(img):
     buf.seek(0)
     return base64.b64encode(buf.getvalue()).decode()
 
+def render_download_button(b64_images):
+    html_code = f"""
+    <button id="downloadBtn" style="padding: 12px 24px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold;">📥 ダウンロード</button>
+    <script>
+    document.getElementById('downloadBtn').addEventListener('click', function() {{
+        const files = [
+            {{'name': '1.png', 'data': 'data:image/png;base64,{b64_images[0]}'}},
+            {{'name': '2.png', 'data': 'data:image/png;base64,{b64_images[1]}'}},
+            {{'name': '3.png', 'data': 'data:image/png;base64,{b64_images[2]}'}},
+            {{'name': '4.png', 'data': 'data:image/png;base64,{b64_images[3]}'}}
+        ];
+        
+        files.forEach((file, index) => {{
+            setTimeout(() => {{
+                const link = document.createElement('a');
+                link.href = file.data;
+                link.download = file.name;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }}, index * 200);
+        }});
+    }});
+    </script>
+    """
+    st.markdown(html_code, unsafe_allow_html=True)
+
 # ===== タブ1：4分割のみ =====
 with tab1:
     st.subheader("画像を16:9にして4分割")
@@ -176,17 +203,20 @@ with tab2:
             for _ in range(shortage):
                 final_sides.append(random.choice(st.session_state.saved_side_images))
         
-        random.shuffle(final_sides)
-        resized_sides = [resize_to_split_size(img.copy(), split_width, split_height) for img in final_sides[:needed]]
-        
-        top_img1 = resized_sides[0]
-        top_img2 = resized_sides[1]
-        bottom_img1 = resized_sides[2]
-        bottom_img2 = resized_sides[3]
-        
+        # 各分割マスごとに異なるランダムな上下画像を選ぶ
         final_images = []
         
         for split_img in split_images:
+            # 毎回新しくシャッフル
+            shuffled_sides = final_sides.copy()
+            random.shuffle(shuffled_sides)
+            
+            # この分割マス用の上下4枚を取得
+            top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, split_height)
+            top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, split_height)
+            bottom_img1 = resize_to_split_size(shuffled_sides[2].copy(), split_width, split_height)
+            bottom_img2 = resize_to_split_size(shuffled_sides[3].copy(), split_width, split_height)
+            
             total_height = top_img1.height + top_img2.height + split_img.height + bottom_img1.height + bottom_img2.height
             combined = Image.new('RGB', (split_width, total_height))
             
@@ -227,19 +257,8 @@ with tab2:
         
         st.subheader("ダウンロード")
         
-        # Base64に変換
         b64_images = [img_to_base64(img) for img in final_images]
-        
-        # HTMLダウンロードリンク
-        html_links = f"""
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <a href="data:image/png;base64,{b64_images[0]}" download="1.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">1.png</a>
-            <a href="data:image/png;base64,{b64_images[1]}" download="2.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">2.png</a>
-            <a href="data:image/png;base64,{b64_images[2]}" download="3.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">3.png</a>
-            <a href="data:image/png;base64,{b64_images[3]}" download="4.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">4.png</a>
-        </div>
-        """
-        st.markdown(html_links, unsafe_allow_html=True)
+        render_download_button(b64_images)
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
@@ -283,17 +302,20 @@ with tab3:
             for _ in range(shortage):
                 final_sides.append(random.choice(side_images))
         
-        random.shuffle(final_sides)
-        resized_sides = [resize_to_split_size(img.copy(), split_width, split_height) for img in final_sides[:needed]]
-        
-        top_img1 = resized_sides[0]
-        top_img2 = resized_sides[1]
-        bottom_img1 = resized_sides[2]
-        bottom_img2 = resized_sides[3]
-        
+        # 各分割マスごとに異なるランダムな上下画像を選ぶ
         final_images = []
         
         for split_img in split_images:
+            # 毎回新しくシャッフル
+            shuffled_sides = final_sides.copy()
+            random.shuffle(shuffled_sides)
+            
+            # この分割マス用の上下4枚を取得
+            top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, split_height)
+            top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, split_height)
+            bottom_img1 = resize_to_split_size(shuffled_sides[2].copy(), split_width, split_height)
+            bottom_img2 = resize_to_split_size(shuffled_sides[3].copy(), split_width, split_height)
+            
             total_height = top_img1.height + top_img2.height + split_img.height + bottom_img1.height + bottom_img2.height
             combined = Image.new('RGB', (split_width, total_height))
             
@@ -334,19 +356,8 @@ with tab3:
         
         st.subheader("ダウンロード")
         
-        # Base64に変換
         b64_images = [img_to_base64(img) for img in final_images]
-        
-        # HTMLダウンロードリンク
-        html_links = f"""
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <a href="data:image/png;base64,{b64_images[0]}" download="1.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">1.png</a>
-            <a href="data:image/png;base64,{b64_images[1]}" download="2.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">2.png</a>
-            <a href="data:image/png;base64,{b64_images[2]}" download="3.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">3.png</a>
-            <a href="data:image/png;base64,{b64_images[3]}" download="4.png" style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">4.png</a>
-        </div>
-        """
-        st.markdown(html_links, unsafe_allow_html=True)
+        render_download_button(b64_images)
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
