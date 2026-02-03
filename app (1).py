@@ -138,12 +138,25 @@ with tab2:
             
             total_side_height = side_height * 4
             
+            # 4枚全て独立してランダム生成
             h1 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
             h2 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
+            h3 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
+            h4 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
             
-            remaining = total_side_height - h1 - h2
-            h3 = remaining // 2
-            h4 = remaining - h3
+            # 上側と下側の合計を等しくしながら、トータル高さも固定
+            upper = h1 + h2
+            lower = h3 + h4
+            
+            if upper + lower != total_side_height:
+                # 下側を調整（h3とh4の比率を保つ）
+                if lower > 0:
+                    ratio = total_side_height / (upper + lower)
+                    h3 = int(h3 * ratio)
+                    h4 = int(h4 * ratio)
+                    
+                    # 微調整（合計がちょうどになるように）
+                    h4 = total_side_height - upper - h3
             
             top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, h1)
             top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, h2)
@@ -334,10 +347,18 @@ with tab3:
             
             h1 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
             h2 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
+            h3 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
+            h4 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
             
-            remaining = total_side_height - h1 - h2
-            h3 = remaining // 2
-            h4 = remaining - h3
+            upper = h1 + h2
+            lower = h3 + h4
+            
+            if upper + lower != total_side_height:
+                if lower > 0:
+                    ratio = total_side_height / (upper + lower)
+                    h3 = int(h3 * ratio)
+                    h4 = int(h4 * ratio)
+                    h4 = total_side_height - upper - h3
             
             top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, h1)
             top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, h2)
