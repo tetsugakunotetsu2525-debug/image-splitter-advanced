@@ -120,7 +120,6 @@ with tab2:
         
         st.write(f"**基準サイズ（メイン分割後）:** {split_width} × {split_height}")
         
-        # 上下画像の固定サイズ
         side_height = split_height
         
         needed = 4
@@ -137,28 +136,33 @@ with tab2:
             shuffled_sides = final_sides.copy()
             random.shuffle(shuffled_sides)
             
-            # 上下画像のサイズは固定、中身のアスペクト比だけ変える
-            top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, side_height)
-            top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, side_height)
-            bottom_img1 = resize_to_split_size(shuffled_sides[2].copy(), split_width, side_height)
-            bottom_img2 = resize_to_split_size(shuffled_sides[3].copy(), split_width, side_height)
+            # 各分割画像ごとに、4枚の上下画像のアスペクト比をランダムに変える
+            h1 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
+            h2 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
+            h3 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
+            h4 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
+            
+            top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, h1)
+            top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, h2)
+            bottom_img1 = resize_to_split_size(shuffled_sides[2].copy(), split_width, h3)
+            bottom_img2 = resize_to_split_size(shuffled_sides[3].copy(), split_width, h4)
             
             # メイン画像の位置は固定
-            total_height = side_height + side_height + split_height + side_height + side_height
+            total_height = h1 + h2 + split_height + h3 + h4
             combined = Image.new('RGB', (split_width, total_height))
             
             y_offset = 0
             combined.paste(top_img1, (0, y_offset))
-            y_offset += side_height
+            y_offset += h1
             
             combined.paste(top_img2, (0, y_offset))
-            y_offset += side_height
+            y_offset += h2
             
             combined.paste(split_img, (0, y_offset))
             y_offset += split_height
             
             combined.paste(bottom_img1, (0, y_offset))
-            y_offset += side_height
+            y_offset += h3
             
             combined.paste(bottom_img2, (0, y_offset))
             
@@ -324,26 +328,31 @@ with tab3:
             shuffled_sides = final_sides.copy()
             random.shuffle(shuffled_sides)
             
-            top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, side_height)
-            top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, side_height)
-            bottom_img1 = resize_to_split_size(shuffled_sides[2].copy(), split_width, side_height)
-            bottom_img2 = resize_to_split_size(shuffled_sides[3].copy(), split_width, side_height)
+            h1 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
+            h2 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
+            h3 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
+            h4 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
             
-            total_height = side_height + side_height + split_height + side_height + side_height
+            top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, h1)
+            top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, h2)
+            bottom_img1 = resize_to_split_size(shuffled_sides[2].copy(), split_width, h3)
+            bottom_img2 = resize_to_split_size(shuffled_sides[3].copy(), split_width, h4)
+            
+            total_height = h1 + h2 + split_height + h3 + h4
             combined = Image.new('RGB', (split_width, total_height))
             
             y_offset = 0
             combined.paste(top_img1, (0, y_offset))
-            y_offset += side_height
+            y_offset += h1
             
             combined.paste(top_img2, (0, y_offset))
-            y_offset += side_height
+            y_offset += h2
             
             combined.paste(split_img, (0, y_offset))
             y_offset += split_height
             
             combined.paste(bottom_img1, (0, y_offset))
-            y_offset += side_height
+            y_offset += h3
             
             combined.paste(bottom_img2, (0, y_offset))
             
