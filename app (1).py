@@ -44,6 +44,9 @@ def split_4(img_cropped):
     ], crop_width, crop_height
 
 def resize_to_split_size(img, target_width, target_height):
+    if target_height <= 0:
+        target_height = 1
+    
     target_ratio = target_width / target_height
     current_ratio = img.width / img.height
     
@@ -73,6 +76,8 @@ def create_zip(images):
 
 def generate_heights(side_height):
     total_side_height = side_height * 2
+    min_h = max(1, int(total_side_height * 0.2))
+    max_h = int(total_side_height * 0.8)
     
     patterns = []
     for _ in range(4):
@@ -82,19 +87,14 @@ def generate_heights(side_height):
     random.shuffle(patterns)
     
     h1 = int(total_side_height * patterns[0])
+    h1 = max(1, min(h1, total_side_height - 1))
     h2 = total_side_height - h1
     
     h3 = int(total_side_height * patterns[1])
-    if h3 <= 0:
-        h3 = int(total_side_height * 0.3)
-    if h3 > total_side_height:
-        h3 = int(total_side_height * 0.7)
+    h3 = max(min_h, min(h3, max_h))
     
     h4 = total_side_height - h3
-    
-    if h4 <= 0:
-        h4 = int(total_side_height * 0.3)
-        h3 = total_side_height - h4
+    h4 = max(min_h, min(h4, max_h))
     
     return h1, h2, h3, h4
 
@@ -125,6 +125,8 @@ with tab2:
                     del st.session_state.comp_sides
                 if 'comp_image_buffers' in st.session_state:
                     del st.session_state.comp_image_buffers
+                if 'comp_heights' in st.session_state:
+                    del st.session_state.comp_heights
                 st.success(f"✓ {len(side_files)}枚の画像を保存しました")
     else:
         st.write("**上下用画像をアップロード（4枚、不足時はランダム補充）**")
@@ -135,9 +137,11 @@ with tab2:
                 del st.session_state.comp_sides
             if 'comp_image_buffers' in st.session_state:
                 del st.session_state.comp_image_buffers
+            if 'comp_heights' in st.session_state:
+                del st.session_state.comp_heights
             st.success(f"✓ {len(side_files)}枚の画像を保存しました")
     
-    if len(main_files) == 4 and len(st.session_state.saved_side_images) > 0:
+    if main_files and len(main_files) == 4 and len(st.session_state.saved_side_images) > 0:
         
         split_images = [Image.open(f) for f in main_files]
         
@@ -240,8 +244,8 @@ with tab2:
         with col4:
             st.download_button("4.png", st.session_state.comp_image_buffers[3], "4.png", "image/png", key="comp_4", use_container_width=True)
     
-    elif len(main_files) > 0 and len(main_files) != 4:
-        st.error("👆 4分割済みメイン画像は**ちょうど4枚**アップロードしてください")
+    elif main_files and len(main_files) != 4:
+        st.error(f"❌ 4分割済み画像は**ちょうど4枚**必要です（現在{len(main_files)}枚）")
     else:
         st.info("👆 4分割済みメイン画像4枚と上下用画像をアップロードしてください")
 
