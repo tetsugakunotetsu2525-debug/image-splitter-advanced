@@ -83,7 +83,13 @@ def generate_heights(side_height):
     
     h1 = int(total_side_height * patterns[0])
     h2 = total_side_height - h1
+    
     h3 = int(total_side_height * patterns[1])
+    if h3 <= 0:
+        h3 = int(total_side_height * 0.3)
+    if h3 > total_side_height:
+        h3 = int(total_side_height * 0.7)
+    
     h4 = total_side_height - h3
     
     if h4 <= 0:
@@ -117,6 +123,8 @@ with tab2:
                 st.session_state.saved_side_images = [Image.open(f) for f in side_files]
                 if 'comp_sides' in st.session_state:
                     del st.session_state.comp_sides
+                if 'comp_image_buffers' in st.session_state:
+                    del st.session_state.comp_image_buffers
                 st.success(f"✓ {len(side_files)}枚の画像を保存しました")
     else:
         st.write("**上下用画像をアップロード（4枚、不足時はランダム補充）**")
@@ -125,6 +133,8 @@ with tab2:
             st.session_state.saved_side_images = [Image.open(f) for f in side_files]
             if 'comp_sides' in st.session_state:
                 del st.session_state.comp_sides
+            if 'comp_image_buffers' in st.session_state:
+                del st.session_state.comp_image_buffers
             st.success(f"✓ {len(side_files)}枚の画像を保存しました")
     
     if main_file is not None and len(st.session_state.saved_side_images) > 0:
@@ -198,6 +208,14 @@ with tab2:
             
             final_images.append(combined)
         
+        if 'comp_image_buffers' not in st.session_state:
+            st.session_state.comp_image_buffers = {}
+            for i, img in enumerate(final_images):
+                buf = BytesIO()
+                img.save(buf, format='PNG')
+                buf.seek(0)
+                st.session_state.comp_image_buffers[i] = buf.getvalue()
+        
         st.subheader("プレビュー")
         col1, col2, col3, col4 = st.columns(4)
         with col1:
@@ -223,25 +241,13 @@ with tab2:
         st.write("**個別ダウンロード**")
         col1, col2, col3, col4 = st.columns(4, gap="small")
         with col1:
-            buf = BytesIO()
-            final_images[0].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("1.png", buf.getvalue(), "1.png", "image/png", key="comp_1", use_container_width=True)
+            st.download_button("1.png", st.session_state.comp_image_buffers[0], "1.png", "image/png", key="comp_1", use_container_width=True)
         with col2:
-            buf = BytesIO()
-            final_images[1].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("2.png", buf.getvalue(), "2.png", "image/png", key="comp_2", use_container_width=True)
+            st.download_button("2.png", st.session_state.comp_image_buffers[1], "2.png", "image/png", key="comp_2", use_container_width=True)
         with col3:
-            buf = BytesIO()
-            final_images[2].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("3.png", buf.getvalue(), "3.png", "image/png", key="comp_3", use_container_width=True)
+            st.download_button("3.png", st.session_state.comp_image_buffers[2], "3.png", "image/png", key="comp_3", use_container_width=True)
         with col4:
-            buf = BytesIO()
-            final_images[3].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("4.png", buf.getvalue(), "4.png", "image/png", key="comp_4", use_container_width=True)
+            st.download_button("4.png", st.session_state.comp_image_buffers[3], "4.png", "image/png", key="comp_4", use_container_width=True)
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
@@ -395,6 +401,14 @@ with tab3:
             
             final_images.append(combined)
         
+        if 'one_image_buffers' not in st.session_state:
+            st.session_state.one_image_buffers = {}
+            for i, img in enumerate(final_images):
+                buf = BytesIO()
+                img.save(buf, format='PNG')
+                buf.seek(0)
+                st.session_state.one_image_buffers[i] = buf.getvalue()
+        
         st.subheader("プレビュー")
         col1, col2, col3, col4 = st.columns(4)
         with col1:
@@ -420,24 +434,12 @@ with tab3:
         st.write("**個別ダウンロード**")
         col1, col2, col3, col4 = st.columns(4, gap="small")
         with col1:
-            buf = BytesIO()
-            final_images[0].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("1.png", buf.getvalue(), "1.png", "image/png", key="one_1", use_container_width=True)
+            st.download_button("1.png", st.session_state.one_image_buffers[0], "1.png", "image/png", key="one_1", use_container_width=True)
         with col2:
-            buf = BytesIO()
-            final_images[1].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("2.png", buf.getvalue(), "2.png", "image/png", key="one_2", use_container_width=True)
+            st.download_button("2.png", st.session_state.one_image_buffers[1], "2.png", "image/png", key="one_2", use_container_width=True)
         with col3:
-            buf = BytesIO()
-            final_images[2].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("3.png", buf.getvalue(), "3.png", "image/png", key="one_3", use_container_width=True)
+            st.download_button("3.png", st.session_state.one_image_buffers[2], "3.png", "image/png", key="one_3", use_container_width=True)
         with col4:
-            buf = BytesIO()
-            final_images[3].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("4.png", buf.getvalue(), "4.png", "image/png", key="one_4", use_container_width=True)
+            st.download_button("4.png", st.session_state.one_image_buffers[3], "4.png", "image/png", key="one_4", use_container_width=True)
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
