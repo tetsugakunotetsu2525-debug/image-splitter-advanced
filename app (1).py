@@ -100,10 +100,10 @@ def generate_heights(side_height):
 
 # ===== タブ2：合成 =====
 with tab2:
-    st.subheader("4分割メイン画像の上下に各2枚ずつ追加")
+    st.subheader("4分割済みメイン画像4枚の上下に各2枚ずつ追加")
     
-    st.write("**メイン画像をアップロード（4分割されます）**")
-    main_file = st.file_uploader("メイン画像", type=['png', 'jpg', 'jpeg', 'bmp', 'gif'], key="main_composite")
+    st.write("**4分割済みのメイン画像4枚をアップロード**")
+    main_files = st.file_uploader("メイン画像（4分割済み）", type=['png', 'jpg', 'jpeg', 'bmp', 'gif'], accept_multiple_files=True, key="main_composite")
     
     st.write("---")
     
@@ -137,23 +137,14 @@ with tab2:
                 del st.session_state.comp_image_buffers
             st.success(f"✓ {len(side_files)}枚の画像を保存しました")
     
-    if main_file is not None and len(st.session_state.saved_side_images) > 0:
+    if len(main_files) == 4 and len(st.session_state.saved_side_images) > 0:
         
-        main_img = Image.open(main_file)
-        original_width, original_height = main_img.size
+        split_images = [Image.open(f) for f in main_files]
         
-        st.write(f"**メイン画像サイズ:** {original_width} × {original_height}")
+        split_width = split_images[0].width
+        split_height = split_images[0].height
         
-        main_cropped = crop_to_16_9(main_img)
-        crop_width, crop_height = main_cropped.size
-        st.write(f"**16:9トリミング後:** {crop_width} × {crop_height}")
-        
-        split_images, cw, ch = split_4(main_cropped)
-        
-        split_width = crop_width // 2
-        split_height = crop_height // 2
-        
-        st.write(f"**基準サイズ（メイン分割後）:** {split_width} × {split_height}")
+        st.write(f"**メイン画像サイズ:** {split_width} × {split_height}")
         
         needed = 4
         final_sides = st.session_state.saved_side_images.copy()
@@ -249,8 +240,10 @@ with tab2:
         with col4:
             st.download_button("4.png", st.session_state.comp_image_buffers[3], "4.png", "image/png", key="comp_4", use_container_width=True)
     
+    elif len(main_files) > 0 and len(main_files) != 4:
+        st.error("👆 4分割済みメイン画像は**ちょうど4枚**アップロードしてください")
     else:
-        st.info("👆 メイン画像と上下用画像をアップロードしてください")
+        st.info("👆 4分割済みメイン画像4枚と上下用画像をアップロードしてください")
 
 # ===== タブ1：4分割のみ =====
 with tab1:
