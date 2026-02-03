@@ -72,61 +72,6 @@ def create_zip(images):
     zip_buffer.seek(0)
     return zip_buffer.getvalue()
 
-# ===== タブ1：4分割のみ =====
-with tab1:
-    st.subheader("画像を16:9にして4分割")
-    
-    uploaded_file = st.file_uploader("画像をアップロード", type=['png', 'jpg', 'jpeg', 'bmp', 'gif'], key="split_only")
-    
-    if uploaded_file is not None:
-        img = Image.open(uploaded_file)
-        original_width, original_height = img.size
-        
-        st.write(f"**元のサイズ:** {original_width} × {original_height}")
-        
-        img_cropped = crop_to_16_9(img)
-        crop_width, crop_height = img_cropped.size
-        st.write(f"**16:9トリミング後:** {crop_width} × {crop_height}")
-        
-        split_images, cw, ch = split_4(img_cropped)
-        
-        st.subheader("ダウンロード")
-        
-        zip_data = create_zip(split_images)
-        st.download_button(
-            label="📦 ZIP一括ダウンロード",
-            data=zip_data,
-            file_name="分割画像.zip",
-            mime="application/zip",
-            key="split_zip"
-        )
-        
-        st.write("**個別ダウンロード**")
-        col1, col2, col3, col4 = st.columns(4, gap="small")
-        with col1:
-            buf = BytesIO()
-            split_images[0].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("1.png", buf.getvalue(), "1.png", "image/png", key="split_1", use_container_width=True)
-        with col2:
-            buf = BytesIO()
-            split_images[1].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("2.png", buf.getvalue(), "2.png", "image/png", key="split_2", use_container_width=True)
-        with col3:
-            buf = BytesIO()
-            split_images[2].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("3.png", buf.getvalue(), "3.png", "image/png", key="split_3", use_container_width=True)
-        with col4:
-            buf = BytesIO()
-            split_images[3].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("4.png", buf.getvalue(), "4.png", "image/png", key="split_4", use_container_width=True)
-    
-    else:
-        st.info("👆 画像をアップロードしてください")
-
 # ===== タブ2：合成 =====
 with tab2:
     st.subheader("4分割メイン画像の上下に各2枚ずつ追加")
@@ -186,14 +131,23 @@ with tab2:
         
         final_images = []
         
-        for split_img in split_images:
+        # ランダムな高さを4枚分生成
+        random_heights = [random.randint(int(split_height * 0.3), int(split_height * 1.5)) for _ in range(4)]
+        
+        for idx, split_img in enumerate(split_images):
             shuffled_sides = final_sides.copy()
             random.shuffle(shuffled_sides)
             
-            top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, split_height)
-            top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, split_height)
-            bottom_img1 = resize_to_split_size(shuffled_sides[2].copy(), split_width, split_height)
-            bottom_img2 = resize_to_split_size(shuffled_sides[3].copy(), split_width, split_height)
+            # 4枚のランダム高さ
+            h1 = random_heights[0]
+            h2 = random_heights[1]
+            h3 = random_heights[2]
+            h4 = random_heights[3]
+            
+            top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, h1)
+            top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, h2)
+            bottom_img1 = resize_to_split_size(shuffled_sides[2].copy(), split_width, h3)
+            bottom_img2 = resize_to_split_size(shuffled_sides[3].copy(), split_width, h4)
             
             total_height = top_img1.height + top_img2.height + split_img.height + bottom_img1.height + bottom_img2.height
             combined = Image.new('RGB', (split_width, total_height))
@@ -214,6 +168,19 @@ with tab2:
             combined.paste(bottom_img2, (0, y_offset))
             
             final_images.append(combined)
+        
+        st.subheader("プレビュー")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.image(final_images[0], width=100)
+        with col2:
+            st.image(final_images[1], width=100)
+        
+        col3, col4 = st.columns(2)
+        with col3:
+            st.image(final_images[2], width=100)
+        with col4:
+            st.image(final_images[3], width=100)
         
         st.subheader("ダウンロード")
         
@@ -248,113 +215,6 @@ with tab2:
             final_images[3].save(buf, format='PNG')
             buf.seek(0)
             st.download_button("4.png", buf.getvalue(), "4.png", "image/png", key="comp_4", use_container_width=True)
-    
-    else:
-        st.info("👆 メイン画像と上下用画像をアップロードしてください")
-
-# ===== タブ3：ワンステップ =====
-with tab3:
-    st.subheader("一気に処理（4分割+合成）")
-    
-    st.write("**メイン画像をアップロード**")
-    main_file_onestep = st.file_uploader("メイン画像", type=['png', 'jpg', 'jpeg', 'bmp', 'gif'], key="main_onestep")
-    
-    st.write("**上下用画像をアップロード（4枚、不足時はランダム補充）**")
-    side_files_onestep = st.file_uploader("上下用画像", type=['png', 'jpg', 'jpeg', 'bmp', 'gif'], accept_multiple_files=True, key="sides_onestep")
-    
-    if main_file_onestep is not None and len(side_files_onestep) > 0:
-        st.write(f"✓ {len(side_files_onestep)}枚の上下用画像がアップロードされました")
-        
-        main_img = Image.open(main_file_onestep)
-        original_width, original_height = main_img.size
-        
-        st.write(f"**メイン画像サイズ:** {original_width} × {original_height}")
-        
-        main_cropped = crop_to_16_9(main_img)
-        crop_width, crop_height = main_cropped.size
-        st.write(f"**16:9トリミング後:** {crop_width} × {crop_height}")
-        
-        split_images, cw, ch = split_4(main_cropped)
-        
-        split_width = crop_width // 2
-        split_height = crop_height // 2
-        
-        st.write(f"**基準サイズ（メイン分割後）:** {split_width} × {split_height}")
-        
-        side_images = [Image.open(f) for f in side_files_onestep]
-        
-        needed = 4
-        final_sides = side_images.copy()
-        
-        if len(final_sides) < needed:
-            shortage = needed - len(final_sides)
-            for _ in range(shortage):
-                final_sides.append(random.choice(side_images))
-        
-        final_images = []
-        
-        for split_img in split_images:
-            shuffled_sides = final_sides.copy()
-            random.shuffle(shuffled_sides)
-            
-            top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, split_height)
-            top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, split_height)
-            bottom_img1 = resize_to_split_size(shuffled_sides[2].copy(), split_width, split_height)
-            bottom_img2 = resize_to_split_size(shuffled_sides[3].copy(), split_width, split_height)
-            
-            total_height = top_img1.height + top_img2.height + split_img.height + bottom_img1.height + bottom_img2.height
-            combined = Image.new('RGB', (split_width, total_height))
-            
-            y_offset = 0
-            combined.paste(top_img1, (0, y_offset))
-            y_offset += top_img1.height
-            
-            combined.paste(top_img2, (0, y_offset))
-            y_offset += top_img2.height
-            
-            combined.paste(split_img, (0, y_offset))
-            y_offset += split_img.height
-            
-            combined.paste(bottom_img1, (0, y_offset))
-            y_offset += bottom_img1.height
-            
-            combined.paste(bottom_img2, (0, y_offset))
-            
-            final_images.append(combined)
-        
-        st.subheader("ダウンロード")
-        
-        zip_data = create_zip(final_images)
-        st.download_button(
-            label="📦 ZIP一括ダウンロード",
-            data=zip_data,
-            file_name="合成画像.zip",
-            mime="application/zip",
-            key="one_zip"
-        )
-        
-        st.write("**個別ダウンロード**")
-        col1, col2, col3, col4 = st.columns(4, gap="small")
-        with col1:
-            buf = BytesIO()
-            final_images[0].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("1.png", buf.getvalue(), "1.png", "image/png", key="one_1", use_container_width=True)
-        with col2:
-            buf = BytesIO()
-            final_images[1].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("2.png", buf.getvalue(), "2.png", "image/png", key="one_2", use_container_width=True)
-        with col3:
-            buf = BytesIO()
-            final_images[2].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("3.png", buf.getvalue(), "3.png", "image/png", key="one_3", use_container_width=True)
-        with col4:
-            buf = BytesIO()
-            final_images[3].save(buf, format='PNG')
-            buf.seek(0)
-            st.download_button("4.png", buf.getvalue(), "4.png", "image/png", key="one_4", use_container_width=True)
     
     else:
         st.info("👆 メイン画像と上下用画像をアップロードしてください")
