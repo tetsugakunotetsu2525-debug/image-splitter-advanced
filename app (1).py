@@ -71,6 +71,23 @@ def create_zip(images):
     zip_buffer.seek(0)
     return zip_buffer.getvalue()
 
+def generate_heights(side_height):
+    total_side_height = side_height * 4
+    
+    patterns = []
+    for _ in range(4):
+        top_ratio = random.uniform(0.3, 0.7)
+        patterns.append(top_ratio)
+    
+    random.shuffle(patterns)
+    
+    h1 = int(total_side_height * patterns[0])
+    h2 = total_side_height - h1
+    h3 = int(total_side_height * patterns[1])
+    h4 = total_side_height - h3
+    
+    return h1, h2, h3, h4
+
 # ===== タブ2：合成 =====
 with tab2:
     st.subheader("4分割メイン画像の上下に各2枚ずつ追加")
@@ -120,8 +137,6 @@ with tab2:
         
         st.write(f"**基準サイズ（メイン分割後）:** {split_width} × {split_height}")
         
-        side_height = split_height
-        
         needed = 4
         final_sides = st.session_state.saved_side_images.copy()
         
@@ -136,27 +151,7 @@ with tab2:
             shuffled_sides = final_sides.copy()
             random.shuffle(shuffled_sides)
             
-            total_side_height = side_height * 4
-            
-            # 4枚全て独立してランダム生成
-            h1 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
-            h2 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
-            h3 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
-            h4 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
-            
-            # 上側と下側の合計を等しくしながら、トータル高さも固定
-            upper = h1 + h2
-            lower = h3 + h4
-            
-            if upper + lower != total_side_height:
-                # 下側を調整（h3とh4の比率を保つ）
-                if lower > 0:
-                    ratio = total_side_height / (upper + lower)
-                    h3 = int(h3 * ratio)
-                    h4 = int(h4 * ratio)
-                    
-                    # 微調整（合計がちょうどになるように）
-                    h4 = total_side_height - upper - h3
+            h1, h2, h3, h4 = generate_heights(split_height)
             
             top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, h1)
             top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, h2)
@@ -325,8 +320,6 @@ with tab3:
         
         st.write(f"**基準サイズ（メイン分割後）:** {split_width} × {split_height}")
         
-        side_height = split_height
-        
         side_images = [Image.open(f) for f in side_files_onestep]
         
         needed = 4
@@ -343,22 +336,7 @@ with tab3:
             shuffled_sides = final_sides.copy()
             random.shuffle(shuffled_sides)
             
-            total_side_height = side_height * 4
-            
-            h1 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
-            h2 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
-            h3 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
-            h4 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
-            
-            upper = h1 + h2
-            lower = h3 + h4
-            
-            if upper + lower != total_side_height:
-                if lower > 0:
-                    ratio = total_side_height / (upper + lower)
-                    h3 = int(h3 * ratio)
-                    h4 = int(h4 * ratio)
-                    h4 = total_side_height - upper - h3
+            h1, h2, h3, h4 = generate_heights(split_height)
             
             top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, h1)
             top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, h2)
