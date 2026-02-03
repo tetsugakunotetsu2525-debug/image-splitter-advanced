@@ -6,7 +6,16 @@ import zipfile
 
 st.set_page_config(page_title="画像ツール", layout="wide")
 
-st.title("📸 画像ツール")
+# ロゴ画像を読み込み
+logo = Image.open("/mnt/user-data/uploads/UaabUdD4_400x400.jpg")
+logo_resized = logo.resize((40, 40), Image.Resampling.LANCZOS)
+
+# タイトルとロゴを並べて表示
+col1, col2 = st.columns([0.08, 0.92])
+with col1:
+    st.image(logo_resized, width=40)
+with col2:
+    st.title("📸 画像ツール")
 
 if 'saved_side_images' not in st.session_state:
     st.session_state.saved_side_images = []
