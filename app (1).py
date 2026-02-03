@@ -72,7 +72,7 @@ def create_zip(images):
     return zip_buffer.getvalue()
 
 def generate_heights(side_height):
-    total_side_height = side_height * 4
+    total_side_height = side_height * 2
     
     patterns = []
     for _ in range(4):
@@ -85,6 +85,10 @@ def generate_heights(side_height):
     h2 = total_side_height - h1
     h3 = int(total_side_height * patterns[1])
     h4 = total_side_height - h3
+    
+    if h4 <= 0:
+        h4 = int(total_side_height * 0.3)
+        h3 = total_side_height - h4
     
     return h1, h2, h3, h4
 
@@ -145,13 +149,20 @@ with tab2:
             for _ in range(shortage):
                 final_sides.append(random.choice(st.session_state.saved_side_images))
         
+        # 高さをループの外で一度だけ生成（ダウンロード押すたびに更新されないように）
+        if 'comp_heights' not in st.session_state:
+            st.session_state.comp_heights = {}
+        
         final_images = []
         
         for idx, split_img in enumerate(split_images):
             shuffled_sides = final_sides.copy()
             random.shuffle(shuffled_sides)
             
-            h1, h2, h3, h4 = generate_heights(split_height)
+            if idx not in st.session_state.comp_heights:
+                st.session_state.comp_heights[idx] = generate_heights(split_height)
+            
+            h1, h2, h3, h4 = st.session_state.comp_heights[idx]
             
             top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, h1)
             top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, h2)
@@ -330,13 +341,19 @@ with tab3:
             for _ in range(shortage):
                 final_sides.append(random.choice(side_images))
         
+        if 'one_heights' not in st.session_state:
+            st.session_state.one_heights = {}
+        
         final_images = []
         
         for idx, split_img in enumerate(split_images):
             shuffled_sides = final_sides.copy()
             random.shuffle(shuffled_sides)
             
-            h1, h2, h3, h4 = generate_heights(split_height)
+            if idx not in st.session_state.one_heights:
+                st.session_state.one_heights[idx] = generate_heights(split_height)
+            
+            h1, h2, h3, h4 = st.session_state.one_heights[idx]
             
             top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, h1)
             top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, h2)
