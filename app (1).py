@@ -90,17 +90,15 @@ with tab1:
         split_images, cw, ch = split_4(img_cropped)
         
         st.subheader("プレビュー")
-        col1, col2 = st.columns(2)
+        col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.image(split_images[0], width=100)
+            st.image(split_images[0], width=150)
         with col2:
-            st.image(split_images[1], width=100)
-        
-        col3, col4 = st.columns(2)
+            st.image(split_images[1], width=150)
         with col3:
-            st.image(split_images[2], width=100)
+            st.image(split_images[2], width=150)
         with col4:
-            st.image(split_images[3], width=100)
+            st.image(split_images[3], width=150)
         
         st.subheader("ダウンロード")
         
@@ -197,16 +195,14 @@ with tab2:
         
         final_images = []
         
-        random_heights = [random.randint(int(split_height * 0.3), int(split_height * 1.5)) for _ in range(4)]
-        
         for idx, split_img in enumerate(split_images):
             shuffled_sides = final_sides.copy()
             random.shuffle(shuffled_sides)
             
-            h1 = random_heights[0]
-            h2 = random_heights[1]
-            h3 = random_heights[2]
-            h4 = random_heights[3]
+            h1 = random.randint(int(split_height * 0.3), int(split_height * 1.5))
+            h2 = random.randint(int(split_height * 0.3), int(split_height * 1.5))
+            h3 = random.randint(int(split_height * 0.3), int(split_height * 1.5))
+            h4 = random.randint(int(split_height * 0.3), int(split_height * 1.5))
             
             top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, h1)
             top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, h2)
@@ -234,17 +230,15 @@ with tab2:
             final_images.append(combined)
         
         st.subheader("プレビュー")
-        col1, col2 = st.columns(2)
+        col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.image(final_images[0], width=100)
+            st.image(final_images[0], width=150)
         with col2:
-            st.image(final_images[1], width=100)
-        
-        col3, col4 = st.columns(2)
+            st.image(final_images[1], width=150)
         with col3:
-            st.image(final_images[2], width=100)
+            st.image(final_images[2], width=150)
         with col4:
-            st.image(final_images[3], width=100)
+            st.image(final_images[3], width=150)
         
         st.subheader("ダウンロード")
         
@@ -324,16 +318,14 @@ with tab3:
         
         final_images = []
         
-        random_heights = [random.randint(int(split_height * 0.3), int(split_height * 1.5)) for _ in range(4)]
-        
         for idx, split_img in enumerate(split_images):
             shuffled_sides = final_sides.copy()
             random.shuffle(shuffled_sides)
             
-            h1 = random_heights[0]
-            h2 = random_heights[1]
-            h3 = random_heights[2]
-            h4 = random_heights[3]
+            h1 = random.randint(int(split_height * 0.3), int(split_height * 1.5))
+            h2 = random.randint(int(split_height * 0.3), int(split_height * 1.5))
+            h3 = random.randint(int(split_height * 0.3), int(split_height * 1.5))
+            h4 = random.randint(int(split_height * 0.3), int(split_height * 1.5))
             
             top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, h1)
             top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, h2)
@@ -361,17 +353,15 @@ with tab3:
             final_images.append(combined)
         
         st.subheader("プレビュー")
-        col1, col2 = st.columns(2)
+        col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.image(final_images[0], width=100)
+            st.image(final_images[0], width=150)
         with col2:
-            st.image(final_images[1], width=100)
-        
-        col3, col4 = st.columns(2)
+            st.image(final_images[1], width=150)
         with col3:
-            st.image(final_images[2], width=100)
+            st.image(final_images[2], width=150)
         with col4:
-            st.image(final_images[3], width=100)
+            st.image(final_images[3], width=150)
         
         st.subheader("ダウンロード")
         
