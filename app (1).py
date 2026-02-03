@@ -136,18 +136,20 @@ with tab2:
             shuffled_sides = final_sides.copy()
             random.shuffle(shuffled_sides)
             
-            # 各分割画像ごとに、4枚の上下画像のアスペクト比をランダムに変える
+            total_side_height = side_height * 4
+            
             h1 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
             h2 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
             h3 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
-            h4 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
+            
+            h4 = total_side_height - h1 - h2 - h3
+            h4 = max(int(side_height * 0.3), min(h4, int(side_height * 1.5)))
             
             top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, h1)
             top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, h2)
             bottom_img1 = resize_to_split_size(shuffled_sides[2].copy(), split_width, h3)
             bottom_img2 = resize_to_split_size(shuffled_sides[3].copy(), split_width, h4)
             
-            # メイン画像の位置は固定
             total_height = h1 + h2 + split_height + h3 + h4
             combined = Image.new('RGB', (split_width, total_height))
             
@@ -328,10 +330,14 @@ with tab3:
             shuffled_sides = final_sides.copy()
             random.shuffle(shuffled_sides)
             
+            total_side_height = side_height * 4
+            
             h1 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
             h2 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
             h3 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
-            h4 = random.randint(int(side_height * 0.3), int(side_height * 1.5))
+            
+            h4 = total_side_height - h1 - h2 - h3
+            h4 = max(int(side_height * 0.3), min(h4, int(side_height * 1.5)))
             
             top_img1 = resize_to_split_size(shuffled_sides[0].copy(), split_width, h1)
             top_img2 = resize_to_split_size(shuffled_sides[1].copy(), split_width, h2)
